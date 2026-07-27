@@ -1,1 +1,53 @@
-Initializing...
+[![](https://img.shields.io/nuget/v/soenneker.telnyx.publickeys.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.telnyx.publickeys/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.telnyx.publickeys/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.telnyx.publickeys/actions/workflows/publish-package.yml)
+[![](https://img.shields.io/nuget/dt/soenneker.telnyx.publickeys.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.telnyx.publickeys/)
+
+# ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Telnyx.PublicKeys
+### A .NET utility for retrieving and caching Telnyx public keys.
+
+## Installation
+
+```bash
+dotnet add package Soenneker.Telnyx.PublicKeys
+```
+
+## Registration
+
+```csharp
+using Soenneker.Telnyx.PublicKeys.Registrars;
+
+services.AddTelnyxPublicKeysUtilAsSingleton();
+```
+
+Configure the Telnyx API token used to retrieve the account's webhook-signing key:
+
+```json
+{
+  "Telnyx": {
+    "Token": "KEY..."
+  }
+}
+```
+
+## Usage
+
+```csharp
+using Soenneker.Telnyx.PublicKeys.Abstract;
+
+public sealed class WebhookService
+{
+    private readonly ITelnyxPublicKeysUtil _publicKeys;
+
+    public WebhookService(ITelnyxPublicKeysUtil publicKeys)
+    {
+        _publicKeys = publicKeys;
+    }
+
+    public async ValueTask<string> GetPublicKey(CancellationToken cancellationToken)
+    {
+        return await _publicKeys.Get(cancellationToken);
+    }
+}
+```
+
+`Get()` retrieves the Base64-encoded Ed25519 key from Telnyx and caches it for 24 hours. Use `Refresh()` to bypass the cached value immediately after rotating a key.
