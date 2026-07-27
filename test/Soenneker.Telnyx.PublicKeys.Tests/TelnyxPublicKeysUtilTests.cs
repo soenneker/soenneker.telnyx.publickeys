@@ -63,6 +63,29 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
+    public async Task RefreshIfCurrent_should_refresh_once_and_suppress_redundant_refreshes()
+    {
+        string firstKey = Convert.ToBase64String(new byte[32]);
+        var secondBytes = new byte[32];
+        Array.Fill(secondBytes, (byte) 1);
+        string secondKey = Convert.ToBase64String(secondBytes);
+
+        var httpClient = new TestTelnyxHttpClient(requestNumber => CreateResponse(requestNumber == 1 ? firstKey : secondKey));
+        var util = new TelnyxPublicKeysUtil(httpClient, NullLogger<TelnyxPublicKeysUtil>.Instance);
+
+        string initial = await util.Get();
+        string refreshed = await util.RefreshIfCurrent(initial);
+        string alreadyChanged = await util.RefreshIfCurrent(initial);
+        string rateLimited = await util.RefreshIfCurrent(refreshed);
+
+        await Assert.That(initial).IsEqualTo(firstKey);
+        await Assert.That(refreshed).IsEqualTo(secondKey);
+        await Assert.That(alreadyChanged).IsEqualTo(secondKey);
+        await Assert.That(rateLimited).IsEqualTo(secondKey);
+        await Assert.That(httpClient.RequestCount).IsEqualTo(2);
+    }
+
+    [Test]
     public async Task Get_should_reject_an_invalid_public_key()
     {
         var httpClient = new TestTelnyxHttpClient(_ => CreateResponse("not-a-public-key"));

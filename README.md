@@ -51,3 +51,6 @@ public sealed class WebhookService
 ```
 
 `Get()` retrieves the Base64-encoded Ed25519 key from Telnyx and caches it for 24 hours. Use `Refresh()` to bypass the cached value immediately after rotating a key.
+
+`RefreshIfCurrent()` supports signature-verification retry flows. It refreshes only when the caller's key is still current
+and rate-limits conditional refreshes to one per minute.

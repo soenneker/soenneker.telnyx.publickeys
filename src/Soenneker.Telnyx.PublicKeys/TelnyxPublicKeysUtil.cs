@@ -16,6 +16,7 @@ namespace Soenneker.Telnyx.PublicKeys;
 public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
 {
     private static readonly TimeSpan _cacheDuration = TimeSpan.FromHours(24);
+    private static readonly TimeSpan _conditionalRefreshCooldown = TimeSpan.FromMinutes(1);
     private const string _publicKeyPath = "public_key";
     private const int _ed25519PublicKeyLength = 32;
 
@@ -24,6 +25,7 @@ public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
     private readonly AsyncLock _refreshLock = new();
 
     private CacheEntry? _cached;
+    private DateTimeOffset _lastConditionalRefreshAt = DateTimeOffset.MinValue;
 
     public TelnyxPublicKeysUtil(ITelnyxHttpClient telnyxHttpClient, ILogger<TelnyxPublicKeysUtil> logger)
     {
@@ -46,6 +48,12 @@ public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
         return RefreshSlow(cancellationToken);
     }
 
+    public ValueTask<string> RefreshIfCurrent(string expectedPublicKey, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(expectedPublicKey);
+        return RefreshIfCurrentSlow(expectedPublicKey, cancellationToken);
+    }
+
     private async ValueTask<string> GetSlow(CancellationToken cancellationToken)
     {
         using (await _refreshLock.Lock(cancellationToken).NoSync())
@@ -63,6 +71,25 @@ public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
     {
         using (await _refreshLock.Lock(cancellationToken).NoSync())
         {
+            return await RetrieveAndCache(cancellationToken).NoSync();
+        }
+    }
+
+    private async ValueTask<string> RefreshIfCurrentSlow(string expectedPublicKey, CancellationToken cancellationToken)
+    {
+        using (await _refreshLock.Lock(cancellationToken).NoSync())
+        {
+            CacheEntry? cached = Volatile.Read(ref _cached);
+
+            if (cached is not null && !string.Equals(cached.PublicKey, expectedPublicKey, StringComparison.Ordinal))
+                return cached.PublicKey;
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+
+            if (cached is not null && now - _lastConditionalRefreshAt < _conditionalRefreshCooldown)
+                return cached.PublicKey;
+
+            _lastConditionalRefreshAt = now;
             return await RetrieveAndCache(cancellationToken).NoSync();
         }
     }
