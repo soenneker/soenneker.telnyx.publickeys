@@ -44,7 +44,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
-        <PackageReference Include="Soenneker.Asyncs.Locks" Version="4.0.66" />
+        <PackageReference Include="Soenneker.Asyncs.Locks" Version="4.0.67" />
         <PackageReference Include="Soenneker.Telnyx.Client" Version="4.0.505" />
     </ItemGroup>
 </Project>
