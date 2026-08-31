@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Soenneker.Telnyx.PublicKeys.Abstract;
 
 /// <summary>
-/// A .NET utility for retrieving and caching Telnyx public keys.
+/// Retrieves and caches the Ed25519 public key used to verify Telnyx webhook signatures.
 /// </summary>
 public interface ITelnyxPublicKeysUtil
 {

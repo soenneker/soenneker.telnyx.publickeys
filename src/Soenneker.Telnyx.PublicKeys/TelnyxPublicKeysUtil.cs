@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace Soenneker.Telnyx.PublicKeys;
 
-/// <inheritdoc cref="ITelnyxPublicKeysUtil"/>
 public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
 {
     private static readonly TimeSpan _cacheDuration = TimeSpan.FromHours(24);
@@ -50,7 +49,6 @@ public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
 
     public ValueTask<string> RefreshIfCurrent(string expectedPublicKey, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(expectedPublicKey);
         return RefreshIfCurrentSlow(expectedPublicKey, cancellationToken);
     }
 

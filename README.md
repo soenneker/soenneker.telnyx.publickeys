@@ -1,9 +1,10 @@
 [![](https://img.shields.io/nuget/v/soenneker.telnyx.publickeys.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.telnyx.publickeys/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.telnyx.publickeys/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.telnyx.publickeys/actions/workflows/publish-package.yml)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.telnyx.publickeys/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.telnyx.publickeys/actions/workflows/codeql.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.telnyx.publickeys.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.telnyx.publickeys/)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Telnyx.PublicKeys
-### A .NET utility for retrieving and caching Telnyx public keys.
+Retrieves and caches the Ed25519 public key used to verify Telnyx webhook signatures.
 
 ## Installation
 
@@ -18,6 +19,8 @@ using Soenneker.Telnyx.PublicKeys.Registrars;
 
 services.AddTelnyxPublicKeysUtilAsSingleton();
 ```
+
+Singleton registration shares the cached key across consumers. Use `AddTelnyxPublicKeysUtilAsScoped()` when the utility should follow the current scope; its Telnyx HTTP provider remains singleton and is reused across scopes.
 
 Configure the Telnyx API token used to retrieve the account's webhook-signing key:
 
@@ -50,7 +53,7 @@ public sealed class WebhookService
 }
 ```
 
-`Get()` retrieves the Base64-encoded Ed25519 key from Telnyx and caches it for 24 hours. Use `Refresh()` to bypass the cached value immediately after rotating a key.
+`Get()` retrieves the Base64-encoded Ed25519 key from Telnyx and caches it for 24 hours. Use `Refresh()` when you need to bypass that cache immediately.
 
 `RefreshIfCurrent()` supports signature-verification retry flows. It refreshes only when the caller's key is still current
 and rate-limits conditional refreshes to one per minute.

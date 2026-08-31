@@ -6,7 +6,7 @@ using Soenneker.Telnyx.PublicKeys.Abstract;
 namespace Soenneker.Telnyx.PublicKeys.Registrars;
 
 /// <summary>
-/// A .NET utility for retrieving and caching Telnyx public keys.
+/// Registers Telnyx webhook-signing public-key retrieval.
 /// </summary>
 public static class TelnyxPublicKeysUtilRegistrar
 {
