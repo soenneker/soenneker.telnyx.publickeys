@@ -27,14 +27,14 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Get_should_cache_the_public_key()
+    public async Task Get_should_cache_the_public_key(CancellationToken cancellationToken)
     {
         string key = Convert.ToBase64String(new byte[32]);
         var httpClient = new TestTelnyxHttpClient(_ => CreateResponse(key));
         var util = new TelnyxPublicKeysUtil(httpClient, NullLogger<TelnyxPublicKeysUtil>.Instance);
 
-        string first = await util.Get();
-        string second = await util.Get();
+        string first = await util.Get(cancellationToken: cancellationToken);
+        string second = await util.Get(cancellationToken: cancellationToken);
 
         await Assert.That(first).IsEqualTo(key);
         await Assert.That(second).IsEqualTo(key);
@@ -42,7 +42,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Refresh_should_replace_the_cached_public_key()
+    public async Task Refresh_should_replace_the_cached_public_key(CancellationToken cancellationToken)
     {
         string firstKey = Convert.ToBase64String(new byte[32]);
         var secondBytes = new byte[32];
@@ -52,9 +52,9 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
         var httpClient = new TestTelnyxHttpClient(requestNumber => CreateResponse(requestNumber == 1 ? firstKey : secondKey));
         var util = new TelnyxPublicKeysUtil(httpClient, NullLogger<TelnyxPublicKeysUtil>.Instance);
 
-        string first = await util.Get();
-        string refreshed = await util.Refresh();
-        string cached = await util.Get();
+        string first = await util.Get(cancellationToken: cancellationToken);
+        string refreshed = await util.Refresh(cancellationToken: cancellationToken);
+        string cached = await util.Get(cancellationToken: cancellationToken);
 
         await Assert.That(first).IsEqualTo(firstKey);
         await Assert.That(refreshed).IsEqualTo(secondKey);
@@ -63,7 +63,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task RefreshIfCurrent_should_refresh_once_and_suppress_redundant_refreshes()
+    public async Task RefreshIfCurrent_should_refresh_once_and_suppress_redundant_refreshes(CancellationToken cancellationToken)
     {
         string firstKey = Convert.ToBase64String(new byte[32]);
         var secondBytes = new byte[32];
@@ -73,10 +73,10 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
         var httpClient = new TestTelnyxHttpClient(requestNumber => CreateResponse(requestNumber == 1 ? firstKey : secondKey));
         var util = new TelnyxPublicKeysUtil(httpClient, NullLogger<TelnyxPublicKeysUtil>.Instance);
 
-        string initial = await util.Get();
-        string refreshed = await util.RefreshIfCurrent(initial);
-        string alreadyChanged = await util.RefreshIfCurrent(initial);
-        string rateLimited = await util.RefreshIfCurrent(refreshed);
+        string initial = await util.Get(cancellationToken: cancellationToken);
+        string refreshed = await util.RefreshIfCurrent(initial, cancellationToken: cancellationToken);
+        string alreadyChanged = await util.RefreshIfCurrent(initial, cancellationToken: cancellationToken);
+        string rateLimited = await util.RefreshIfCurrent(refreshed, cancellationToken: cancellationToken);
 
         await Assert.That(initial).IsEqualTo(firstKey);
         await Assert.That(refreshed).IsEqualTo(secondKey);
@@ -86,7 +86,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Get_should_reject_an_invalid_public_key()
+    public async Task Get_should_reject_an_invalid_public_key(CancellationToken cancellationToken)
     {
         var httpClient = new TestTelnyxHttpClient(_ => CreateResponse("not-a-public-key"));
         var util = new TelnyxPublicKeysUtil(httpClient, NullLogger<TelnyxPublicKeysUtil>.Instance);
@@ -95,7 +95,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
 
         try
         {
-            await util.Get();
+            await util.Get(cancellationToken: cancellationToken);
         }
         catch (Exception e)
         {
