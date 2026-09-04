@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Soenneker.Telnyx.PublicKeys;
 
+/// <inheritdoc cref="ITelnyxPublicKeysUtil" />
 public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
 {
     private static readonly TimeSpan _cacheDuration = TimeSpan.FromHours(24);
