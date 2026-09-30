@@ -21,13 +21,13 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Default()
+    public async ValueTask Default()
     {
         await Assert.That(_util).IsNotNull();
     }
 
     [Test]
-    public async Task Get_should_cache_the_public_key(CancellationToken cancellationToken)
+    public async ValueTask Get_should_cache_the_public_key(CancellationToken cancellationToken)
     {
         string key = Convert.ToBase64String(new byte[32]);
         var httpClient = new TestTelnyxHttpClient(_ => CreateResponse(key));
@@ -42,7 +42,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Refresh_should_replace_the_cached_public_key(CancellationToken cancellationToken)
+    public async ValueTask Refresh_should_replace_the_cached_public_key(CancellationToken cancellationToken)
     {
         string firstKey = Convert.ToBase64String(new byte[32]);
         var secondBytes = new byte[32];
@@ -63,7 +63,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task RefreshIfCurrent_should_refresh_once_and_suppress_redundant_refreshes(CancellationToken cancellationToken)
+    public async ValueTask RefreshIfCurrent_should_refresh_once_and_suppress_redundant_refreshes(CancellationToken cancellationToken)
     {
         string firstKey = Convert.ToBase64String(new byte[32]);
         var secondBytes = new byte[32];
@@ -86,7 +86,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Get_should_reject_an_invalid_public_key(CancellationToken cancellationToken)
+    public async ValueTask Get_should_reject_an_invalid_public_key(CancellationToken cancellationToken)
     {
         var httpClient = new TestTelnyxHttpClient(_ => CreateResponse("not-a-public-key"));
         var util = new TelnyxPublicKeysUtil(httpClient, NullLogger<TelnyxPublicKeysUtil>.Instance);
