@@ -21,7 +21,7 @@ public sealed class TelnyxPublicKeysUtilTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask Default()
+    public async ValueTask Default(CancellationToken cancellationToken)
     {
         await Assert.That(_util).IsNotNull();
     }
