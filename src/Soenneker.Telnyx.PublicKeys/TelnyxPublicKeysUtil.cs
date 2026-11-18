@@ -120,7 +120,8 @@ public sealed class TelnyxPublicKeysUtil : ITelnyxPublicKeysUtil
             throw new JsonException("The Telnyx public-key response did not contain a valid Base64-encoded Ed25519 public key.");
 
         Volatile.Write(ref _cached, new CacheEntry(publicKey, DateTimeOffset.UtcNow.Add(_cacheDuration)));
-        _logger.LogDebug("Cached the Telnyx webhook-signing public key for {CacheDuration}", _cacheDuration);
+        if (_logger.IsEnabled(LogLevel.Debug))
+            _logger.LogDebug("Cached the Telnyx webhook-signing public key for {CacheDuration}", _cacheDuration);
 
         return publicKey;
     }
